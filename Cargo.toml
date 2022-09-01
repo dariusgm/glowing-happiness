@@ -2,6 +2,8 @@
 name = "glowing-happiness"
 version = "0.1.0"
 edition = "2021"
+authors = ["Darius Murawski <darius@murawski.blog>"]
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,3 +17,7 @@ env_logger = "0.9.0"
 [dev-dependencies]
 assert_cmd = "2.0.4"
 predicates = "2.1.1"
+
+[[bin]]
+name = "glowing-happiness"
+path = "src/main.rs"
