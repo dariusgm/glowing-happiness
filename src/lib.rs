@@ -4,6 +4,7 @@ use core::result::Result;
 use core::result::Result::{Err, Ok};
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::collections::HashMap;
+use std::error::Error;
 use std::sync::Mutex;
 use walkdir::DirEntry;
 
@@ -11,7 +12,42 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-pub fn by_dir(a: &Path, predicate: &str) -> bool {
+use clap::Parser;
+use crate::parsing::arg_parse;
+
+mod parsing;
+
+#[derive(Parser)]
+#[clap(name = "Glowing-Happiness")]
+#[clap(version = "0.1")]
+#[clap(about = "Analyse what kind of files you have in a directory", long_about = None)]
+pub struct ApplicationOptions {
+    #[clap(long, multiple_values = false)]
+    pub input: String,
+
+    #[clap(long, value_parser)]
+    pub output: Option<String>,
+}
+
+pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>> {
+    let root = options.input.as_str();
+    let files = walk(root);
+    let path_by_tool = collect_by_path(files);
+    println!("{:?}", &path_by_tool);
+
+    let counted_by_tool = count_by_path(&path_by_tool);
+    println!("{:?}", &counted_by_tool);
+    let tools = Vec::from_iter(counted_by_tool.into_keys());
+    println!("{:?}", &tools);
+    Ok(())
+}
+
+pub fn run() -> Result<(), Box<dyn Error>> {
+    let options: ApplicationOptions = arg_parse();
+    run_by_option(&options)
+}
+
+fn by_dir(a: &Path, predicate: &str) -> bool {
     a.is_dir() && a.ends_with(predicate)
 }
 
