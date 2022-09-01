@@ -1,7 +1,11 @@
+extern crate core;
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
 
+use std::path::PathBuf;
+use std::sync::Mutex;
+
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use walkdir::{DirEntry, WalkDir};
 
 fn by_dir(a: &PathBuf, predicate: &str) -> bool {
@@ -71,47 +75,48 @@ fn walk(root: &str) -> Vec<DirEntry> {
     all_files
 }
 
-fn collect_by_path(files: Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
+fn process_file(file: &DirEntry) -> Vec<String> {
+    let mut result = Vec::new();
     let type_content_map = read_type_content_map();
     let type_name_map = read_type_name_map();
     let type_name_dir_map = read_type_name_dir_map();
 
-    let mut result = HashMap::<PathBuf, Vec<String>>::new();
-
-    for file in files {
-        let key = file.path().to_path_buf();
-        for (app, predicate) in type_name_map.iter() {
-            if by_name(&key, predicate) {
-                match result.get_mut(&key) {
-                    Some(v) => v.push(String::from(*app)),
-                    None => {
-                        result.insert(key.clone(), vec![String::from(*app)]);
-                    }
-                };
-            }
-        }
-
-        for (app, predicate) in type_name_dir_map.iter() {
-            if by_dir(&key, predicate) {
-                match result.get_mut(&key) {
-                    Some(v) => v.push(String::from(*app)),
-                    None => {
-                        result.insert(key.clone(), vec![String::from(*app)]);
-                    }
-                };
-            }
-        }
-
-        for app in by_content(&key, type_content_map.clone()) {
-            match result.get_mut(&key) {
-                Some(v) => v.push(app),
-                None => {
-                    result.insert(key.clone(), vec![app]);
-                }
-            }
+    let key = file.path().to_path_buf();
+    for (app, predicate) in type_name_map.iter() {
+        if by_name(&key, predicate) {
+                result.push(String::from(*app))
         }
     }
+
+    for (app, predicate) in type_name_dir_map.iter() {
+        if by_dir(&key, predicate) {
+              result.push(String::from(*app));
+        }
+    }
+
+    for app in by_content(&key, type_content_map.clone()) {
+        result.push(app)
+    }
     result
+}
+
+fn collect_by_path(files: Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
+    let result = Mutex::new(HashMap::<PathBuf, Vec<String>>::new());
+    files
+        .par_iter()
+        .for_each(|a| {
+            let r = process_file(a);
+            match result.lock() {
+                Ok(x) => x,
+                Err(_) => panic!(),
+            }.insert(a.clone().into_path(), r);
+        });
+
+    let a = match result.lock() {
+        Ok(a) => { a.to_owned() }
+        Err(_) => panic!()
+    };
+    a
 }
 
 fn count_by_path(hashmap: &HashMap<PathBuf, Vec<String>>) -> HashMap<String, usize> {
