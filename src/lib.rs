@@ -81,22 +81,37 @@ fn read_type_content_map() -> HashMap<&'static str, &'static str> {
 }
 
 fn read_type_name_dir_map() -> HashMap<&'static str, &'static str> {
-    HashMap::from([("git", ".git")])
+    HashMap::from(
+        [
+            ("git", ".git"),
+            ("circleci", ".circleci"),
+            ("github", ".github"),
+        ]
+    )
 }
 
 fn read_type_name_map() -> HashMap<&'static str, &'static str> {
     HashMap::from([
-        ("cdk", "cdk"),
-        ("gradle", "build.gradle"),
-        ("docker", "Dockerfile"),
-        ("java", ".java"),
-        ("scala", ".scala"),
-        ("python", ".py"),
-        ("kotlin", ".kt"),
-        ("jenkins", "Jenkinsfile"),
+        // Languages
         ("go", ".go"),
-        ("npm", "package.json"),
+        ("java", ".java"),
+        ("kotlin", ".kt"),
+        ("python", ".py"),
+        ("rust", ".rs"),
+        ("scala", ".scala"),
+        ("swift", ".swift"),
+        ("yaml", ".yaml"),
+        ("yaml", ".yml"),
+        // dependency manager
+        ("gradle", "build.gradle"),
         ("yarn", "yarn.lock"),
+        ("npm", "package.json"),
+        ("cargo", "Cargo.toml"),
+        // Misc
+        ("docker", "Dockerfile"),
+        ("gitignore", ".gitignore"),
+        ("jenkins", "Jenkinsfile"),
+        ("toml", ".toml"),
     ])
 }
 
