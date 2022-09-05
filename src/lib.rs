@@ -14,7 +14,7 @@ use walkdir::WalkDir;
 
 use clap::Parser;
 use crate::parsing::arg_parse;
-use crate::rules::{read_type_content_map, read_type_name_dir_map};
+use crate::rules::{read_type_content_map, read_type_name_dir_map, read_type_name_map};
 
 mod parsing;
 mod rules;
@@ -90,26 +90,28 @@ pub fn walk(root: &str) -> Vec<DirEntry> {
 }
 
 fn process_file(file: &DirEntry) -> Vec<String> {
-    let mut result = Vec::new();
+    let mut result : Vec<String> = Vec::new();
     let type_content_map = read_type_content_map();
-    let type_name_map = read_type_name_dir_map();
+    let type_name_map = read_type_name_map();
     let type_name_dir_map = read_type_name_dir_map();
 
     let key = file.path().to_path_buf();
-    for (app, predicates) in type_name_map.iter() {
-        if by_name(&key, predicates) {
-            result.push(String::from(*app))
+    for (&app, predicates) in type_name_map.iter() {
+        if by_name(&key, predicates) && (! result.contains(&app.to_string())) {
+            result.push(app.to_string())
         }
     }
 
-    for (app, predicates) in type_name_dir_map.iter() {
-        if by_dir(&key, predicates) {
-            result.push(String::from(*app));
+    for (&app, predicates) in type_name_dir_map.iter() {
+        if by_dir(&key, predicates) && (! result.contains(&app.to_string())) {
+            result.push(app.to_string());
         }
     }
 
     for app in by_content(&key, type_content_map) {
-        result.push(app)
+        if ! result.contains(&app.to_string()) {
+            result.push(app)
+        }
     }
     result
 }
