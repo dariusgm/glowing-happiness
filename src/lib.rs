@@ -93,25 +93,49 @@ fn read_type_name_dir_map() -> HashMap<&'static str, &'static str> {
 fn read_type_name_map() -> HashMap<&'static str, &'static str> {
     HashMap::from([
         // Languages
+        ("Dart", ".dart"),
+        ("Ini", ".properties"),
+        ("Jupyter Notebook", ".ipynb"),
+        ("Makefile", "Makefile"),
+        ("Objective-C", ".m"),
+        ("TypeScript", ".ts"),
+        ("XML Property List", ".plist"),
+        ("c", ".c"),
+        ("css", ".css"),
         ("go", ".go"),
+        ("html",".html"),
         ("java", ".java"),
+        ("javascript", ".js"),
+        ("json", ".json"),
         ("kotlin", ".kt"),
+        ("markdown", ".md"),
         ("python", ".py"),
         ("rust", ".rs"),
         ("scala", ".scala"),
+        ("shell", ".sh"),
         ("swift", ".swift"),
+        ("xml", ".xml"),
         ("yaml", ".yaml"),
         ("yaml", ".yml"),
+
+        // Image
+        ("png", ".png"),
+        ("jpg", "jpg"),
+        ("jpg", "jpeg"),
+        ("svg",".svg"),
+
         // dependency manager
         ("gradle", "build.gradle"),
         ("yarn", "yarn.lock"),
         ("npm", "package.json"),
         ("cargo", "Cargo.toml"),
+
         // Misc
         ("docker", "Dockerfile"),
         ("gitignore", ".gitignore"),
         ("jenkins", "Jenkinsfile"),
         ("toml", ".toml"),
+        ("test", "tests"),
     ])
 }
 
@@ -142,7 +166,7 @@ fn process_file(file: &DirEntry) -> Vec<String> {
         }
     }
 
-    for app in by_content(&key, type_content_map.clone()) {
+    for app in by_content(&key, type_content_map) {
         result.push(app)
     }
     result
@@ -161,11 +185,11 @@ pub fn collect_by_path(files: Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
         }
     });
 
-    let a = match result.lock() {
-        Ok(a) => a.to_owned(),
+    let real_result = match result.lock() {
+        Ok(unboxed) => unboxed.to_owned(),
         Err(_) => panic!(),
     };
-    a
+    real_result
 }
 
 pub fn count_by_path(hashmap: &HashMap<PathBuf, Vec<String>>) -> HashMap<String, usize> {
