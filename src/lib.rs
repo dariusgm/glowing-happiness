@@ -14,8 +14,10 @@ use walkdir::WalkDir;
 
 use clap::Parser;
 use crate::parsing::arg_parse;
+use crate::rules::{read_type_content_map, read_type_name_dir_map};
 
 mod parsing;
+mod rules;
 
 #[derive(Parser)]
 #[clap(name = "Glowing-Happiness")]
@@ -47,15 +49,24 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     run_by_option(&options)
 }
 
-fn by_dir(a: &Path, predicate: &str) -> bool {
-    a.is_dir() && a.ends_with(predicate)
+fn by_dir(a: &Path, predicates: &Vec<&str>) -> bool {
+    for predicate in predicates {
+        if a.is_dir() && a.ends_with(predicate) {
+            return true
+            }
+        }
+    false
 }
 
-fn by_name(a: &PathBuf, predicate: &str) -> bool {
-    match fs::read_to_string(a) {
-        Ok(content) => content.contains(predicate),
-        Err(_) => false,
+fn by_name(a: &PathBuf, predicates: &Vec<&str>) -> bool {
+    for x in a {
+        for predicate in predicates {
+            if x.to_string_lossy().contains(predicate) {
+                return true
+            }
+        }
     }
+    false
 }
 
 fn by_content(a: &PathBuf, predicate: HashMap<&str, &str>) -> Vec<String> {
@@ -70,75 +81,6 @@ fn by_content(a: &PathBuf, predicate: HashMap<&str, &str>) -> Vec<String> {
     result
 }
 
-fn read_type_content_map() -> HashMap<&'static str, &'static str> {
-    HashMap::from([
-        ("spark", "import org.apache.spark.sql.SparkSession"),
-        (
-            "spring-boot",
-            "import org.springframework.web.bind.annotation.RestController",
-        ),
-    ])
-}
-
-fn read_type_name_dir_map() -> HashMap<&'static str, &'static str> {
-    HashMap::from(
-        [
-            ("git", ".git"),
-            ("circleci", ".circleci"),
-            ("github", ".github"),
-        ]
-    )
-}
-
-fn read_type_name_map() -> HashMap<&'static str, &'static str> {
-    HashMap::from([
-        // Languages
-        ("Dart", ".dart"),
-        ("Ini", ".properties"),
-        ("Jupyter Notebook", ".ipynb"),
-        ("Makefile", "Makefile"),
-        ("Objective-C", ".m"),
-        ("TypeScript", ".ts"),
-        ("XML Property List", ".plist"),
-        ("c", ".c"),
-        ("css", ".css"),
-        ("go", ".go"),
-        ("html",".html"),
-        ("java", ".java"),
-        ("javascript", ".js"),
-        ("json", ".json"),
-        ("kotlin", ".kt"),
-        ("markdown", ".md"),
-        ("python", ".py"),
-        ("rust", ".rs"),
-        ("scala", ".scala"),
-        ("shell", ".sh"),
-        ("swift", ".swift"),
-        ("xml", ".xml"),
-        ("yaml", ".yaml"),
-        ("yaml", ".yml"),
-
-        // Image
-        ("png", ".png"),
-        ("jpg", "jpg"),
-        ("jpg", "jpeg"),
-        ("svg",".svg"),
-
-        // dependency manager
-        ("gradle", "build.gradle"),
-        ("yarn", "yarn.lock"),
-        ("npm", "package.json"),
-        ("cargo", "Cargo.toml"),
-
-        // Misc
-        ("docker", "Dockerfile"),
-        ("gitignore", ".gitignore"),
-        ("jenkins", "Jenkinsfile"),
-        ("toml", ".toml"),
-        ("test", "tests"),
-    ])
-}
-
 pub fn walk(root: &str) -> Vec<DirEntry> {
     let mut all_files = Vec::new();
     for p in WalkDir::new(root).into_iter().filter_map(Result::ok) {
@@ -150,18 +92,18 @@ pub fn walk(root: &str) -> Vec<DirEntry> {
 fn process_file(file: &DirEntry) -> Vec<String> {
     let mut result = Vec::new();
     let type_content_map = read_type_content_map();
-    let type_name_map = read_type_name_map();
+    let type_name_map = read_type_name_dir_map();
     let type_name_dir_map = read_type_name_dir_map();
 
     let key = file.path().to_path_buf();
-    for (app, predicate) in type_name_map.iter() {
-        if by_name(&key, predicate) {
+    for (app, predicates) in type_name_map.iter() {
+        if by_name(&key, predicates) {
             result.push(String::from(*app))
         }
     }
 
-    for (app, predicate) in type_name_dir_map.iter() {
-        if by_dir(&key, predicate) {
+    for (app, predicates) in type_name_dir_map.iter() {
+        if by_dir(&key, predicates) {
             result.push(String::from(*app));
         }
     }
