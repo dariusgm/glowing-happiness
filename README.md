@@ -70,12 +70,16 @@ To execute the application for several repositories, you can glue it with some p
 ```python
 import os
 import subprocess
-root = "."
+root = "/home/darius"
 for directory in os.listdir(root):
     subprocess.call(f"cargo run -- --input {os.path.join(root, directory)} > {directory}.json", shell=True)
 ```
+you can also run it in bash with awk magic
+```bash
+ls -dl /home/darius/*/ | awk -F'[[:space:]]' '{print "cargo run -- --input " $NF " > " substr($NF, 1, length($NF)-1) ".json"}' | bash
+```
 
-Now you can visualize it.
+Now you can visualize it. But before we go to it, some more examples of real repositories.
 
 # Real World example
 Here you will find some popular repositories and the execution times of the analysis.
