@@ -43,13 +43,21 @@ Returns only a distinct json list of tools used:
 
 ```
 
-## Parallel Execution
-The files will be analysed in parallel. To reduce the IO load on your device, you can set
-`RAYON_NUM_THREADS=4` to only use 4 threads instead of all.
+# Snippet
+To execute the application for several repositories, you can glue it with some python:
+```python
+import os
+import subprocess
+root = "."
+for directory in os.listdir(root):
+    subprocess.call(f"cargo run -- --input {os.path.join(root, directory)} > {directory}.json", shell=True)
+```
+
+Now you can visualize it.
 
 # Visualisation
 You can use the streamlit code in python to visualize the repositories.
-Something like this may get you on the way:
+Something like this may get you on the way.
 ```bash
 cargo run -- --input . > app_1.json
 python3 -m venv ./venv
@@ -61,3 +69,7 @@ streamlit run streamlit/app.py
 ![streamlit](streamlit.png)
 
 In case you want a rust solution here, feel free to contribute. 
+
+# Parallel Execution
+The files will be analysed in parallel. To reduce the IO load on your device, you can set
+`RAYON_NUM_THREADS=4` to only use 4 threads instead of all.
