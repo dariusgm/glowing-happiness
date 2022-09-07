@@ -10,6 +10,7 @@ use std::sync::Mutex;
 
 use clap::Parser;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
+use serde::Serialize;
 use walkdir::DirEntry;
 use walkdir::WalkDir;
 
@@ -35,6 +36,15 @@ pub struct ApplicationOptions {
     pub output: Option<String>,
 }
 
+fn write_json<T>(value: &T)
+where
+    T: ?Sized + Serialize
+{
+    match serde_json::to_string(&value) {
+        Ok(json_string) => println!("{}", json_string),
+        Err(err) => panic!("{:?}", err)
+    }
+}
 
 pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>> {
     let root = options.input.as_str();
@@ -45,26 +55,16 @@ pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>>
         None => "count_by_tool"
     };
 
-
     if mode == "list_by_file" {
-        match serde_json::to_string(&path_by_tool) {
-            Ok(json_string) => println!("{}", json_string),
-            Err(err) => panic!("{:?}", err)
-        }
+        write_json(&path_by_tool);
     } else {
         let counted_by_tool = count_by_path(&path_by_tool);
 
         if mode == "list" {
             let tools = Vec::from_iter(counted_by_tool.into_keys());
-            match serde_json::to_string(&tools) {
-                Ok(json_string) => println!("{}", json_string),
-                Err(err) => panic!("{:?}", err)
-            }
+            write_json(&tools);
         } else {
-            match serde_json::to_string(&counted_by_tool) {
-                Ok(json_string) => println!("{}", json_string),
-                Err(err) => panic!("{:?}", err)
-            }
+            write_json(&counted_by_tool);
         }
     }
     Ok(())
