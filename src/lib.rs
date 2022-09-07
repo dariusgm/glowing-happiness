@@ -14,7 +14,6 @@ use walkdir::DirEntry;
 use walkdir::WalkDir;
 
 
-
 use crate::parsing::arg_parse;
 use crate::rules::{read_type_content_map, read_type_name_dir_map, read_type_name_map};
 
@@ -36,46 +35,37 @@ pub struct ApplicationOptions {
     pub output: Option<String>,
 }
 
-fn default_run(files: &Vec<DirEntry>) {
-            let path_by_tool = collect_by_path(&files);
-            let counted_by_tool = count_by_path(&path_by_tool);
-            match serde_json::to_string(&counted_by_tool) {
-                Ok(json_string) => println!("{}", json_string),
-                Err(err) => panic!("{:?}", err)
-            }
-
-}
 
 pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>> {
     let root = options.input.as_str();
     let files = walk(root);
-    match &options.mode {
-        Some(s) => {
-            if s == "list_by_file" {
-                let path_by_tool = collect_by_path(&files);
-                match serde_json::to_string(&path_by_tool) {
-                    Ok(json_string) => println!("{}", json_string),
-                    Err(err) => panic!("{:?}", err)
-                }
-            }
-
-            if s == "list" {
-                let path_by_tool = collect_by_path(&files);
-                let counted_by_tool = count_by_path(&path_by_tool);
-                let tools = Vec::from_iter(counted_by_tool.into_keys());
-                match serde_json::to_string(&tools) {
-                    Ok(json_string) => println!("{}", json_string),
-                    Err(err) => panic!("{:?}", err)
-                }
-            }
-
-            if s == "count_by_tool" {
-                default_run(&files)
-            }
+    let path_by_tool = collect_by_path(&files);
+    let mode = match &options.mode {
+        Some(s) => s,
+        None => "count_by_tool"
+    };
 
 
+    if mode == "list_by_file" {
+        match serde_json::to_string(&path_by_tool) {
+            Ok(json_string) => println!("{}", json_string),
+            Err(err) => panic!("{:?}", err)
         }
-        None => default_run(&files)
+    } else {
+        let counted_by_tool = count_by_path(&path_by_tool);
+
+        if mode == "list" {
+            let tools = Vec::from_iter(counted_by_tool.into_keys());
+            match serde_json::to_string(&tools) {
+                Ok(json_string) => println!("{}", json_string),
+                Err(err) => panic!("{:?}", err)
+            }
+        } else {
+            match serde_json::to_string(&counted_by_tool) {
+                Ok(json_string) => println!("{}", json_string),
+                Err(err) => panic!("{:?}", err)
+            }
+        }
     }
     Ok(())
 }
@@ -98,7 +88,7 @@ fn by_name(a: &PathBuf, predicates: &Vec<&str>) -> bool {
     for x in a {
         for predicate in predicates {
             let path_as_string = x.to_string_lossy().to_string();
-            if  path_as_string.ends_with(predicate)  {
+            if path_as_string.ends_with(predicate) {
                 return true;
             }
         }
@@ -193,11 +183,10 @@ fn test_count_by_path() {
     let tools_2 = vec!["readme".to_owned()];
     let path_buf_2 = PathBuf::from("/tmp/README.md");
     let tools_1 = vec!["rust".to_owned(), "readme".to_owned()];
-    let hashmap = HashMap::from([(path_buf_1, tools_1), (path_buf_2,tools_2)]);
+    let hashmap = HashMap::from([(path_buf_1, tools_1), (path_buf_2, tools_2)]);
     let result = count_by_path(&hashmap);
     assert_eq!(result.get("readme").unwrap().to_owned(), 2_usize);
     assert_eq!(result.get("rust").unwrap().to_owned(), 1_usize);
-
 }
 
 #[test]
@@ -211,5 +200,5 @@ fn test_by_name_1() {
 fn test_by_name_2() {
     let path = PathBuf::from("hello.cpp");
     let predicates = vec![".c"];
-    assert!(! by_name(&path, &predicates))
+    assert!(!by_name(&path, &predicates))
 }
