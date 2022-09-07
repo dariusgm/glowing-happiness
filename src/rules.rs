@@ -23,13 +23,13 @@ pub fn read_type_name_dir_map() -> HashMap<&'static str, Vec<&'static str>> {
 pub fn read_type_name_map() -> HashMap<&'static str, Vec<&'static str>> {
     HashMap::from([
         // Languages
-        ("Dart", vec![".dart"]),
-        ("Ini", vec![".properties"]),
-        ("Jupyter Notebook", vec![".ipynb"]),
-        ("Makefile", vec!["Makefile"]),
-        ("Objective-C", vec![".m"]),
-        ("TypeScript", vec![".ts"]),
-        ("XML Property List", vec![".plist"]),
+        ("dart", vec![".dart"]),
+        ("ini", vec![".properties"]),
+        ("jupyter notebook", vec![".ipynb"]),
+        ("makefile", vec!["Makefile"]),
+        ("objective-c", vec![".m"]),
+        ("typescript", vec![".ts"]),
+        ("xml property list", vec![".plist"]),
         ("c", vec![".c"]),
         ("css", vec![".css"]),
         ("go", vec![".go"]),

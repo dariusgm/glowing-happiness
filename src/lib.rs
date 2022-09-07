@@ -2,17 +2,19 @@ extern crate core;
 
 use core::result::Result;
 use core::result::Result::{Err, Ok};
-use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::collections::HashMap;
 use std::error::Error;
-use std::sync::Mutex;
-use walkdir::DirEntry;
-
 use std::fs;
 use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
+use std::sync::Mutex;
 
 use clap::Parser;
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
+use walkdir::DirEntry;
+use walkdir::WalkDir;
+
+
+
 use crate::parsing::arg_parse;
 use crate::rules::{read_type_content_map, read_type_name_dir_map, read_type_name_map};
 
@@ -27,6 +29,9 @@ pub struct ApplicationOptions {
     #[clap(long, multiple_values = false)]
     pub input: String,
 
+    #[clap(long)]
+    pub mode: Option<String>,
+
     #[clap(long, value_parser)]
     pub output: Option<String>,
 }
@@ -34,13 +39,27 @@ pub struct ApplicationOptions {
 pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>> {
     let root = options.input.as_str();
     let files = walk(root);
-    let path_by_tool = collect_by_path(files);
-    println!("{:?}", &path_by_tool);
-
-    let counted_by_tool = count_by_path(&path_by_tool);
-    println!("{:?}", &counted_by_tool);
-    let tools = Vec::from_iter(counted_by_tool.into_keys());
-    println!("{:?}", &tools);
+    match &options.mode {
+        Some(s) => {
+            if s == "list" {
+                let path_by_tool = collect_by_path(files);
+                let counted_by_tool = count_by_path(&path_by_tool);
+                let tools = Vec::from_iter(counted_by_tool.into_keys());
+                match serde_json::to_string(&tools) {
+                    Ok(json_string) => println!("{}", json_string),
+                    Err(err) => panic!("{:?}", err)
+                }
+            }
+        }
+        None => {
+            let path_by_tool = collect_by_path(files);
+            let counted_by_tool = count_by_path(&path_by_tool);
+                match serde_json::to_string(&counted_by_tool) {
+                    Ok(json_string) => println!("{}", json_string),
+                    Err(err) => panic!("{:?}", err)
+                }
+        }
+    }
     Ok(())
 }
 
@@ -52,9 +71,9 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 fn by_dir(a: &Path, predicates: &Vec<&str>) -> bool {
     for predicate in predicates {
         if a.is_dir() && a.ends_with(predicate) {
-            return true
-            }
+            return true;
         }
+    }
     false
 }
 
@@ -62,7 +81,7 @@ fn by_name(a: &PathBuf, predicates: &Vec<&str>) -> bool {
     for x in a {
         for predicate in predicates {
             if x.to_string_lossy().contains(predicate) {
-                return true
+                return true;
             }
         }
     }
@@ -90,26 +109,26 @@ pub fn walk(root: &str) -> Vec<DirEntry> {
 }
 
 fn process_file(file: &DirEntry) -> Vec<String> {
-    let mut result : Vec<String> = Vec::new();
+    let mut result: Vec<String> = Vec::new();
     let type_content_map = read_type_content_map();
     let type_name_map = read_type_name_map();
     let type_name_dir_map = read_type_name_dir_map();
 
     let key = file.path().to_path_buf();
     for (&app, predicates) in type_name_map.iter() {
-        if by_name(&key, predicates) && (! result.contains(&app.to_string())) {
+        if by_name(&key, predicates) && (!result.contains(&app.to_string())) {
             result.push(app.to_string())
         }
     }
 
     for (&app, predicates) in type_name_dir_map.iter() {
-        if by_dir(&key, predicates) && (! result.contains(&app.to_string())) {
+        if by_dir(&key, predicates) && (!result.contains(&app.to_string())) {
             result.push(app.to_string());
         }
     }
 
     for app in by_content(&key, type_content_map) {
-        if ! result.contains(&app.to_string()) {
+        if !result.contains(&app.to_string()) {
             result.push(app)
         }
     }
@@ -125,7 +144,7 @@ pub fn collect_by_path(files: Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
                 Ok(x) => x,
                 Err(_) => panic!(),
             }
-            .insert(a.clone().into_path(), r);
+                .insert(a.clone().into_path(), r);
         }
     });
 
