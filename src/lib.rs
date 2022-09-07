@@ -36,13 +36,31 @@ pub struct ApplicationOptions {
     pub output: Option<String>,
 }
 
+fn default_run(files: &Vec<DirEntry>) {
+            let path_by_tool = collect_by_path(&files);
+            let counted_by_tool = count_by_path(&path_by_tool);
+            match serde_json::to_string(&counted_by_tool) {
+                Ok(json_string) => println!("{}", json_string),
+                Err(err) => panic!("{:?}", err)
+            }
+
+}
+
 pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>> {
     let root = options.input.as_str();
     let files = walk(root);
     match &options.mode {
         Some(s) => {
+            if s == "list_by_file" {
+                let path_by_tool = collect_by_path(&files);
+                match serde_json::to_string(&path_by_tool) {
+                    Ok(json_string) => println!("{}", json_string),
+                    Err(err) => panic!("{:?}", err)
+                }
+            }
+
             if s == "list" {
-                let path_by_tool = collect_by_path(files);
+                let path_by_tool = collect_by_path(&files);
                 let counted_by_tool = count_by_path(&path_by_tool);
                 let tools = Vec::from_iter(counted_by_tool.into_keys());
                 match serde_json::to_string(&tools) {
@@ -50,15 +68,14 @@ pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>>
                     Err(err) => panic!("{:?}", err)
                 }
             }
+
+            if s == "count_by_tool" {
+                default_run(&files)
+            }
+
+
         }
-        None => {
-            let path_by_tool = collect_by_path(files);
-            let counted_by_tool = count_by_path(&path_by_tool);
-                match serde_json::to_string(&counted_by_tool) {
-                    Ok(json_string) => println!("{}", json_string),
-                    Err(err) => panic!("{:?}", err)
-                }
-        }
+        None => default_run(&files)
     }
     Ok(())
 }
@@ -136,7 +153,7 @@ fn process_file(file: &DirEntry) -> Vec<String> {
     result
 }
 
-pub fn collect_by_path(files: Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
+pub fn collect_by_path(files: &Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
     let result = Mutex::new(HashMap::<PathBuf, Vec<String>>::new());
     files.par_iter().for_each(|a| {
         let r = process_file(a);

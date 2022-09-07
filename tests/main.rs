@@ -9,7 +9,11 @@ fn cmd() -> Command {
 
 #[test]
 fn test_show_help() {
-    cmd().arg("--help").assert().success().stdout(
+    cmd()
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(
         predicate::str::contains("--help")
             .and(predicate::str::contains("--input"))
             .and(predicate::str::contains("--output")),
@@ -18,7 +22,12 @@ fn test_show_help() {
 
 #[test]
 fn test_self() {
-    cmd().arg("--input").arg(".").assert().success().stdout(
+    cmd()
+        .arg("--input")
+        .arg(".")
+        .assert()
+        .success()
+        .stdout(
         predicate::str::contains("rust")
     );
 }
@@ -26,7 +35,12 @@ fn test_self() {
 
 #[test]
 fn test_project_a() {
-    cmd().arg("--input").arg("tests/repositories/project_a").assert().success().stdout(
+    cmd()
+        .arg("--input")
+        .arg("tests/repositories/project_a")
+        .assert()
+        .success()
+        .stdout(
         predicate::str::contains("github")
             .and(predicate::str::contains("circleci"))
             .and(predicate::str::contains("swift"))
@@ -35,7 +49,60 @@ fn test_project_a() {
 
 #[test]
 fn test_project_b() {
-    cmd().arg("--input").arg("tests/repositories/project_b").assert().success().stdout(
+    cmd()
+        .arg("--input")
+        .arg("tests/repositories/project_b")
+        .assert()
+        .success()
+        .stdout(
+        predicate::str::contains("cargo")
+            .and(predicate::str::contains("rust"))
+            .and(predicate::str::contains("toml"))
+    );
+}
+
+#[test]
+fn test_project_b_with_count_by_tool() {
+    cmd()
+        .arg("--input")
+        .arg("tests/repositories/project_b")
+        .arg("--mode")
+        .arg("count_by_tool")
+        .assert()
+        .success()
+        .stdout(
+        predicate::str::contains("cargo")
+            .and(predicate::str::contains("rust"))
+            .and(predicate::str::contains("toml"))
+    );
+}
+
+#[test]
+fn test_project_b_with_list_by_path() {
+    cmd()
+        .arg("--input")
+        .arg("tests/repositories/project_b")
+        .arg("--mode")
+        .arg("count_by_tool")
+        .assert()
+        .success()
+        .stdout(
+        predicate::str::contains("cargo")
+            .and(predicate::str::contains("rust"))
+            .and(predicate::str::contains("toml"))
+    );
+}
+
+#[test]
+fn test_project_b_with_list_by_file() {
+    cmd()
+        .arg("--input")
+        .arg("tests/repositories/project_b")
+        .arg("--mode")
+        .arg("list_by_file")
+        .assert()
+        .success()
+        .stdout(
         predicate::str::contains("cargo")
             .and(predicate::str::contains("rust"))
             .and(predicate::str::contains("toml"))

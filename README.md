@@ -33,11 +33,33 @@ Output:
 
 For Visualisation, see [Visualisation](README.md#Visualisation)
 
+### Mode
+With `mode` you can define the aggregation level of the output.
+When setting no mode is defaults to "count_by_tool".
+Both calls are equivalent:
+
+#### No Mode / count_by_tool
+```bash
+cargo run -- --input .
+```
+
+```bash
+cargo run -- --input . --mode count_by_tool
+```
+
+### list_by_file
+```bash
+cargo run -- --input . --mode list_by_file
+```
+
+
+#### List
+Returns only a distinct json list of tools used:
+
 ```bash
 cargo run -- --input . --mode list
 ```
 
-Returns only a distinct json list of tools used:
 ```json
 ["toml","gitignore","spark","json","test","github","c","cargo","javascript","rust","python","swift","git","spring-boot","markdown","objective-c","xml","circleci"]
 
@@ -54,6 +76,35 @@ for directory in os.listdir(root):
 ```
 
 Now you can visualize it.
+
+# Real World example
+Here you will find some popular repositories and the execution times of the analysis.
+Please note as with every benchmark, this can only give you a idea how fast it will run on your device.
+Also note that this repositories are very huge. The fetching of the content will take longer than the analysis.
+
+## VS Code
+```bash
+git clone --branch main https://github.com/Microsoft/vscode/ repositories/vscode
+find repositories/vscode | wc -l
+time cargo run -- --input repositories/vscode
+```
+
+Example Output:
+```json
+{"objective-c":1,"java":1,"npm":107,"xml property list":3,"docker":2,"dart":1,"yaml":58,"rust":2,"python":2,"shell":45,"gitignore":18,"javascript":248,"svg":72,"css":211,"github":2,"json":644,"swift":1,"xml":5,"git":1,"jupyter notebook":1,"yarn":100,"markdown":75,"go":2,"png":71,"html":43,"typescript":3987,"c":1}
+```
+
+4 seconds for 8k files
+
+
+## Flutter (300 MB locally)
+```bash
+git clone --branch master https://github.com/flutter/flutter.git repositories/flutter
+find repositories/flutter | wc -l
+time cargo run -- --input repositories/flutter
+```
+
+4 seconds for 8800 files.
 
 # Visualisation
 You can use the streamlit code in python to visualize the repositories.
