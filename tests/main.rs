@@ -26,7 +26,7 @@ fn test_self() {
 
 #[test]
 fn test_code_edit() {
-    cmd().arg("--input").arg("tests/repositories/CodeEdit").assert().success().stdout(
+    cmd().arg("--input").arg("tests/repositories/project_a").assert().success().stdout(
         predicate::str::contains("github")
             .and(predicate::str::contains("circleci"))
             .and(predicate::str::contains("swift"))
@@ -35,7 +35,7 @@ fn test_code_edit() {
 
 #[test]
 fn test_helix() {
-    cmd().arg("--input").arg("tests/repositories/helix").assert().success().stdout(
+    cmd().arg("--input").arg("tests/repositories/project_b").assert().success().stdout(
         predicate::str::contains("cargo")
             .and(predicate::str::contains("rust"))
             .and(predicate::str::contains("toml"))
