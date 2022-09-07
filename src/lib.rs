@@ -80,7 +80,8 @@ fn by_dir(a: &Path, predicates: &Vec<&str>) -> bool {
 fn by_name(a: &PathBuf, predicates: &Vec<&str>) -> bool {
     for x in a {
         for predicate in predicates {
-            if x.to_string_lossy().contains(predicate) {
+            let path_as_string = x.to_string_lossy().to_string();
+            if  path_as_string.ends_with(predicate)  {
                 return true;
             }
         }
@@ -155,7 +156,7 @@ pub fn collect_by_path(files: Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
     real_result
 }
 
-pub fn count_by_path(hashmap: &HashMap<PathBuf, Vec<String>>) -> HashMap<String, usize> {
+fn count_by_path(hashmap: &HashMap<PathBuf, Vec<String>>) -> HashMap<String, usize> {
     let mut result: HashMap<String, usize> = HashMap::new();
     for (_path, tools) in hashmap.iter() {
         for tool in tools {
@@ -167,4 +168,31 @@ pub fn count_by_path(hashmap: &HashMap<PathBuf, Vec<String>>) -> HashMap<String,
     }
 
     result
+}
+
+#[test]
+fn test_count_by_path() {
+    let path_buf_1 = PathBuf::from("/tmp/main.rs");
+    let tools_2 = vec!["readme".to_owned()];
+    let path_buf_2 = PathBuf::from("/tmp/README.md");
+    let tools_1 = vec!["rust".to_owned(), "readme".to_owned()];
+    let hashmap = HashMap::from([(path_buf_1, tools_1), (path_buf_2,tools_2)]);
+    let result = count_by_path(&hashmap);
+    assert_eq!(result.get("readme").unwrap().to_owned(), 2_usize);
+    assert_eq!(result.get("rust").unwrap().to_owned(), 1_usize);
+
+}
+
+#[test]
+fn test_by_name_1() {
+    let path = PathBuf::from("somefile.txt");
+    let predicates = vec![".txt"];
+    assert!(by_name(&path, &predicates))
+}
+
+#[test]
+fn test_by_name_2() {
+    let path = PathBuf::from("hello.cpp");
+    let predicates = vec![".c"];
+    assert!(! by_name(&path, &predicates))
 }
