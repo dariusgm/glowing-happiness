@@ -47,6 +47,12 @@ pub fn read_type_name_map() -> HashMap<&'static str, Vec<&'static str>> {
         ("xml", vec![".xml"]),
         ("yaml", vec![".yaml", ".yml"]),
 
+        // Data format
+        ("csv", vec![".csv"]),
+        ("tsv", vec![".tsv"]),
+        ("avro", vec![".avro"]),
+        ("parquet", vec![".parquet"]),
+        
         // Image
         ("png", vec![".png"]),
         ("jpg", vec!["jpg"]),
@@ -64,6 +70,5 @@ pub fn read_type_name_map() -> HashMap<&'static str, Vec<&'static str>> {
         ("gitignore", vec![".gitignore"]),
         ("jenkins", vec!["Jenkinsfile"]),
         ("toml", vec![".toml"]),
-        ("test", vec!["tests"]),
     ])
 }
