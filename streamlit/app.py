@@ -8,7 +8,6 @@ import json
 def load_data():
     result = {}
     for f in filter(lambda x: ".json" in x, os.listdir(".")):
-
         with(open(f, 'rt')) as json_reader:
             try:
                 result[f] = []
@@ -20,7 +19,7 @@ def load_data():
     return result
 
 data = load_data()
-file = st.selectbox("files", data.keys())
+file = st.selectbox("files", sorted(data.keys()))
 subset = data[file]
 
 st.bar_chart(subset, x="tool", y="count")
