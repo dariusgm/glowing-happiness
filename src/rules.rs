@@ -36,7 +36,6 @@ pub fn read_type_name_map() -> HashMap<&'static str, Vec<&'static str>> {
         ("html", vec![".html"]),
         ("java", vec![".java"]),
         ("javascript", vec![".js"]),
-        ("json", vec![".json"]),
         ("kotlin", vec![".kt"]),
         ("markdown", vec![".md"]),
         ("python", vec![".py"]),
@@ -48,22 +47,23 @@ pub fn read_type_name_map() -> HashMap<&'static str, Vec<&'static str>> {
         ("yaml", vec![".yaml", ".yml"]),
 
         // Data format
-        ("csv", vec![".csv"]),
-        ("tsv", vec![".tsv"]),
         ("avro", vec![".avro"]),
+        ("csv", vec![".csv"]),
+        ("json", vec![".json"]),
         ("parquet", vec![".parquet"]),
-        
+        ("tsv", vec![".tsv"]),
+
         // Image
-        ("png", vec![".png"]),
-        ("jpg", vec!["jpg"]),
         ("jpg", vec!["jpeg"]),
+        ("jpg", vec!["jpg"]),
+        ("png", vec![".png"]),
         ("svg", vec![".svg"]),
 
         // dependency manager
-        ("gradle", vec!["build.gradle"]),
-        ("yarn", vec!["yarn.lock"]),
-        ("npm", vec!["package.json"]),
         ("cargo", vec!["Cargo.toml"]),
+        ("gradle", vec!["build.gradle"]),
+        ("npm", vec!["package.json"]),
+        ("yarn", vec!["yarn.lock"]),
 
         // Misc
         ("docker", vec!["Dockerfile"]),
