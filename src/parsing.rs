@@ -7,6 +7,7 @@ impl Clone for ApplicationOptions {
     fn clone(&self) -> Self {
         ApplicationOptions {
             input: self.input.clone(),
+            config: self.config.clone(),
             mode: self.mode.clone(),
             output: self.output.clone(),
         }
@@ -18,6 +19,7 @@ impl Debug for ApplicationOptions {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("")
             .field(&self.input)
+            .field(&self.config)
             .field(&self.mode)
             .field(&self.output)
             .finish()
@@ -31,6 +33,7 @@ pub fn arg_parse() -> ApplicationOptions {
 
     info!("Parsed following arguments: ");
     info!("input: {:?}", &cli.input);
+    info!("config: {:?}", &cli.config);
     info!("mode: {:?}", &cli.mode);
     info!("output: {:?}", &cli.output);
     cli
