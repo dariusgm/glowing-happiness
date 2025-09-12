@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-pub fn read_type_content_map() -> HashMap<&'static str, &'static str> {
+pub fn read_type_content_map() -> HashMap<&'static str, Vec<&'static str>> {
     HashMap::from([
-        ("spark", "import org.apache.spark.sql.SparkSession"),
+        ("spark", vec!["import org.apache.spark.sql.SparkSession"]),
         (
             "spring-boot",
-            "import org.springframework.web.bind.annotation.RestController",
+            vec!["import org.springframework.web.bind.annotation.RestController"],
         ),
     ])
 }
@@ -55,7 +55,7 @@ pub fn read_type_name_map() -> HashMap<&'static str, Vec<&'static str>> {
         ("tsv", vec![".tsv"]),
 
         // Image
-        ("jpg", vec!["jpeg"]),
+        ("jpeg", vec!["jpeg"]),
         ("jpg", vec!["jpg"]),
         ("png", vec![".png"]),
         ("svg", vec![".svg"]),

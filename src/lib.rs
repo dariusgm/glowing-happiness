@@ -96,12 +96,14 @@ fn by_name(a: &PathBuf, predicates: &Vec<&str>) -> bool {
     false
 }
 
-fn by_content(a: &PathBuf, predicate: HashMap<&str, &str>) -> Vec<String> {
+fn by_content(a: &PathBuf, predicate: HashMap<&str, Vec<&str>>) -> Vec<String> {
     let mut result = Vec::new();
     if let Ok(content) = fs::read_to_string(a) {
-        for (app, predicate) in predicate.iter() {
-            if content.contains(predicate) {
-                result.push(String::from(*app));
+        for (app, predicates) in predicate.iter() {
+            for predicate in predicates {
+                if content.contains(predicate) {
+                    result.push(String::from(*app));
+                }
             }
         }
     }
@@ -140,6 +142,7 @@ fn process_file(file: &DirEntry) -> Vec<String> {
             result.push(app)
         }
     }
+
     result
 }
 
