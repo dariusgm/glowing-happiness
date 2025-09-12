@@ -36,6 +36,12 @@ pub struct ApplicationOptions {
     pub output: Option<String>,
 }
 
+pub struct Config {
+    pub name_map: HashMap<String, Vec<String>>,
+    pub dir_map: HashMap<String, Vec<String>>,
+    pub content_map: HashMap<String, Vec<String>>
+}
+
 fn write_json<T>(value: &T)
 where
     T: ?Sized + Serialize
@@ -53,6 +59,19 @@ pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>>
     let mode = match &options.mode {
         Some(s) => s,
         None => "count_by_tool"
+    };
+
+    let config = match &options.output {
+        Some(s) => {
+            name_map: HashMap<String, Vec<String>> ,
+            dir_map: HashMap(),
+            content_map: HashMap()
+        }
+        None => Config {
+            name_map: read_type_name_map(),
+            dir_map: read_type_name_dir_map().into_iter().map(|(k, v)| (k.to_string(), v.into_iter().map(|s| s.to_string()).collect())).collect(),
+            content_map: read_type_content_map().into_iter().map(|(k, v)| (k.to_string(), v.into_iter().map(|s| s.to_string()).collect())).collect()
+        }}
     };
 
     if mode == "list_by_file" {
