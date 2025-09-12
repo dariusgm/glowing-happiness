@@ -26,7 +26,7 @@ mod rules;
 #[clap(version = "0.1")]
 #[clap(about = "Analyse what kind of files you have in a directory", long_about = None)]
 pub struct ApplicationOptions {
-    #[clap(long, multiple_values = false)]
+    #[clap(long)]
     pub input: String,
 
     #[clap(long)]

@@ -1,5 +1,6 @@
 extern crate core;
 
+use std::primitive::str;
 use assert_cmd::Command;
 use predicates::prelude::*;
 

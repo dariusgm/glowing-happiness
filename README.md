@@ -14,6 +14,17 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo build
 ```
 
+or for a release build:
+
+```bash
+cargo build --release
+```
+
+### Testing
+```bash
+cargo test
+```
+
 
 ## usage
 When running as binary directly, replace `cargo run -- ` with `glowing-happiness `  
@@ -23,7 +34,7 @@ Provide the input path of the directory / repository that you want to analyse.
 This command will return a json with the tool distribution.
 ```bash
 # when using the ready binary
-cargo run -- --input .
+glowing-happiness --input .
 ```
 Output: 
 
@@ -32,6 +43,11 @@ Output:
 ```
 
 For Visualisation, see [Visualisation](README.md#Visualisation)
+
+## Configuration
+You can use a yml configuration file to change the pattern you want to match (on filename or on content).
+By default, the application will look for `.glowing-happiness.yml` in the current directory
+or in your home directory `~/.glowing-happiness.yml`.
 
 ### Mode
 With `mode` you can define the aggregation level of the output.
