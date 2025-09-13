@@ -101,7 +101,7 @@ pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>>
     };
 
     let config = read_config(&options.config)?;
-    let path_by_tool = collect_by_path(&files);
+    let path_by_tool = collect_by_path(&files, &config);
 
     if mode == "list_by_file" {
         write_json(&path_by_tool);
@@ -123,7 +123,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     run_by_option(&options)
 }
 
-fn by_dir(a: &Path, predicates: &Vec<&str>) -> bool {
+fn by_dir(a: &Path, predicates: &Vec<String>) -> bool {
     for predicate in predicates {
         if a.is_dir() && a.ends_with(predicate) {
             return true;
@@ -132,7 +132,7 @@ fn by_dir(a: &Path, predicates: &Vec<&str>) -> bool {
     false
 }
 
-fn by_name(a: &PathBuf, predicates: &Vec<&str>) -> bool {
+fn by_name(a: &PathBuf, predicates: &Vec<String>) -> bool {
     for x in a {
         for predicate in predicates {
             let path_as_string = x.to_string_lossy().to_string();
@@ -144,13 +144,13 @@ fn by_name(a: &PathBuf, predicates: &Vec<&str>) -> bool {
     false
 }
 
-fn by_content(a: &PathBuf, predicate: HashMap<&str, Vec<&str>>) -> Vec<String> {
+fn by_content(a: &PathBuf, predicate: HashMap<String, Vec<String>>) -> Vec<String> {
     let mut result = Vec::new();
     if let Ok(content) = fs::read_to_string(a) {
         for (app, predicates) in predicate.iter() {
             for predicate in predicates {
                 if content.contains(predicate) {
-                    result.push(String::from(*app));
+                    result.push(String::from(app));
                 }
             }
         }
@@ -166,22 +166,22 @@ pub fn walk(root: &str) -> Vec<DirEntry> {
     all_files
 }
 
-fn process_file(file: &DirEntry) -> Vec<String> {
+fn process_file(file: &DirEntry, config: &Config) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
-    let type_content_map = read_type_content_map();
-    let type_name_map = read_type_name_map();
-    let type_name_dir_map = read_type_name_dir_map();
+    let type_content_map = config.content_map.clone();
+    let type_name_map = config.name_map.clone();
+    let type_name_dir_map = config.dir_map.clone();
 
     let key = file.path().to_path_buf();
-    for (&app, predicates) in type_name_map.iter() {
-        if by_name(&key, predicates) && (!result.contains(&app.to_string())) {
-            result.push(app.to_string())
+    for (app_name_map, predicates) in type_name_map.iter() {
+        if by_name(&key, predicates) && (!result.contains(&app_name_map)) {
+            result.push(app_name_map.clone())
         }
     }
 
-    for (&app, predicates) in type_name_dir_map.iter() {
-        if by_dir(&key, predicates) && (!result.contains(&app.to_string())) {
-            result.push(app.to_string());
+    for (app_name_dir, predicates) in type_name_dir_map.iter() {
+        if by_dir(&key, predicates) && (!result.contains(&app_name_dir)) {
+            result.push(app_name_dir.clone());
         }
     }
 
@@ -194,16 +194,16 @@ fn process_file(file: &DirEntry) -> Vec<String> {
     result
 }
 
-pub fn collect_by_path(files: &Vec<DirEntry>) -> HashMap<PathBuf, Vec<String>> {
+pub fn collect_by_path(files: &Vec<DirEntry>, config: &Config) -> HashMap<PathBuf, Vec<String>> {
     let result = Mutex::new(HashMap::<PathBuf, Vec<String>>::new());
-    files.par_iter().for_each(|a| {
-        let r = process_file(a);
+    files.par_iter().for_each(|directory_entry| {
+        let r = process_file(directory_entry, config);
         if !r.is_empty() {
             match result.lock() {
                 Ok(x) => x,
                 Err(_) => panic!(),
             }
-                .insert(a.clone().into_path(), r);
+                .insert(directory_entry.clone().into_path(), r);
         }
     });
 
@@ -243,13 +243,13 @@ fn test_count_by_path() {
 #[test]
 fn test_by_name_1() {
     let path = PathBuf::from("somefile.txt");
-    let predicates = vec![".txt"];
+    let predicates = vec![String::from(".txt")];
     assert!(by_name(&path, &predicates))
 }
 
 #[test]
 fn test_by_name_2() {
     let path = PathBuf::from("hello.cpp");
-    let predicates = vec![".c"];
+    let predicates = vec![String::from(".c")];
     assert!(!by_name(&path, &predicates))
 }
