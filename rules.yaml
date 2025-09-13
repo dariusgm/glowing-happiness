@@ -1,0 +1,95 @@
+content_map:
+  spark:
+    - "import org.apache.spark.sql.SparkSession"
+  spring-boot:
+    - "import org.springframework.web.bind.annotation.RestController"
+dir_map:
+  git:
+    - ".git"
+  circleci:
+    - ".circleci"
+  github:
+    - ".github"
+name_map:
+  c:
+    - ".c"
+  css:
+    - ".css"
+  dart:
+    - ".dart"
+  gherkin:
+    - ".feature"
+  go:
+    - ".go"
+  html:
+    - ".html"
+  ini:
+    - ".properties"
+  java:
+    - ".java"
+  javascript:
+    - ".js"
+  jupyter notebook:
+    - ".ipynb"
+  kotlin:
+    - ".kt"
+  makefile:
+    - "Makefile"
+  markdown:
+    - ".md"
+  objective-c:
+    - ".m"
+  python:
+    - ".py"
+  rust:
+    - ".rs"
+  scala:
+    - ".scala"
+  shell:
+    - ".sh"
+  swift:
+    - ".swift"
+  typescript:
+    - ".ts"
+  xml property list:
+    - ".plist"
+  xml:
+    - ".xml"
+  yaml:
+    - ".yaml"
+    - ".yml"
+  avro:
+    - ".avro"
+  csv:
+    - ".csv"
+  json:
+    - ".json"
+  parquet:
+    - ".parquet"
+  tsv:
+    - ".tsv"
+  jpeg:
+    - "jpeg"
+  jpg:
+    - "jpg"
+  png:
+    - ".png"
+  svg:
+    - ".svg"
+  cargo:
+    - "Cargo.toml"
+  gradle:
+    - "build.gradle"
+  npm:
+    - "package.json"
+  yarn:
+    - "yarn.lock"
+  docker:
+    - "Dockerfile"
+  gitignore:
+    - ".gitignore"
+  jenkins:
+    - "Jenkinsfile"
+  toml:
+    - ".toml"
+

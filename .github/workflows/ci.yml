@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: glowing-happiness-linux
+            bin_path: target/release/glowing-happiness
+          - os: macos-latest
+            artifact_name: glowing-happiness-macos
+            bin_path: target/release/glowing-happiness
+          - os: windows-latest
+            artifact_name: glowing-happiness-windows.exe
+            bin_path: target/release/glowing-happiness.exe
+
+    env:
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+
+      - name: Build (release)
+        run: cargo build --release --locked
+
+      - name: Tests
+        run: cargo test --all --locked --verbose
+
+      - name: Artefakt vorbereiten
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "${{ matrix.bin_path }}" "dist/${{ matrix.artifact_name }}"
+          cp LICENSE dist/ 2>/dev/null || true
+
+      - name: Upload Artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
