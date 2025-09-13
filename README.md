@@ -46,8 +46,12 @@ For Visualisation, see [Visualisation](README.md#Visualisation)
 
 ## Configuration
 You can use a yml configuration file to change the pattern you want to match (on filename or on content).
-By default, the application will look for `.glowing-happiness.yml` in the current directory
-or in your home directory `~/.glowing-happiness.yml`.
+By default, the application will use hardcoded settings in the code. But you can also use a custom yaml for your use case.
+You can find it in this respository under `rules.yml`.
+
+```bash
+cargo run -- --input . --config rules.yml
+```
 
 ### Mode
 With `mode` you can define the aggregation level of the output.
