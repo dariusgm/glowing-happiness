@@ -10,7 +10,7 @@ use std::sync::Mutex;
 
 use clap::Parser;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use walkdir::DirEntry;
 use walkdir::WalkDir;
 
@@ -30,16 +30,55 @@ pub struct ApplicationOptions {
     pub input: String,
 
     #[clap(long)]
+    pub config: Option<String>,
+
+    #[clap(long)]
     pub mode: Option<String>,
 
     #[clap(long, value_parser)]
     pub output: Option<String>,
 }
 
+#[derive(Deserialize)]
 pub struct Config {
     pub name_map: HashMap<String, Vec<String>>,
     pub dir_map: HashMap<String, Vec<String>>,
     pub content_map: HashMap<String, Vec<String>>
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            name_map: read_type_name_map()
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v.into_iter().map(|s| s.to_string()).collect()))
+                .collect(),
+            dir_map: read_type_name_dir_map()
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v.into_iter().map(|s| s.to_string()).collect()))
+                .collect(),
+            content_map: read_type_content_map()
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v.into_iter().map(|s| s.to_string()).collect()))
+                .collect()
+        }
+    }
+}
+
+
+fn read_config(path_opt: &Option<String>) -> Result<Config, Box<dyn Error>> {
+    if let Some(path_str) = path_opt {
+        let path = Path::new(path_str);
+        if !path.exists() {
+            return Err(format!("Konfigurationsdatei nicht gefunden: {}", path_str).into());
+        }
+        let yaml = fs::read_to_string(path)?;
+        let cfg: Config = serde_yaml::from_str(&yaml)
+            .map_err(|e| format!("YAML kann nicht geparst werden: {e}"))?;
+        Ok(cfg)
+    } else {
+        Ok(Config::default())
+    }
 }
 
 fn write_json<T>(value: &T)
@@ -55,24 +94,14 @@ where
 pub fn run_by_option(options: &ApplicationOptions) -> Result<(), Box<dyn Error>> {
     let root = options.input.as_str();
     let files = walk(root);
-    let path_by_tool = collect_by_path(&files);
+
     let mode = match &options.mode {
         Some(s) => s,
         None => "count_by_tool"
     };
 
-    let config = match &options.output {
-        Some(s) => {
-            name_map: HashMap<String, Vec<String>> ,
-            dir_map: HashMap(),
-            content_map: HashMap()
-        }
-        None => Config {
-            name_map: read_type_name_map(),
-            dir_map: read_type_name_dir_map().into_iter().map(|(k, v)| (k.to_string(), v.into_iter().map(|s| s.to_string()).collect())).collect(),
-            content_map: read_type_content_map().into_iter().map(|(k, v)| (k.to_string(), v.into_iter().map(|s| s.to_string()).collect())).collect()
-        }}
-    };
+    let config = read_config(&options.config)?;
+    let path_by_tool = collect_by_path(&files);
 
     if mode == "list_by_file" {
         write_json(&path_by_tool);
