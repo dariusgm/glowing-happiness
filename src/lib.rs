@@ -174,13 +174,13 @@ fn process_file(file: &DirEntry, config: &Config) -> Vec<String> {
 
     let key = file.path().to_path_buf();
     for (app_name_map, predicates) in type_name_map.iter() {
-        if by_name(&key, predicates) && (!result.contains(&app_name_map)) {
+        if by_name(&key, predicates) && (!result.contains(app_name_map)) {
             result.push(app_name_map.clone())
         }
     }
 
     for (app_name_dir, predicates) in type_name_dir_map.iter() {
-        if by_dir(&key, predicates) && (!result.contains(&app_name_dir)) {
+        if by_dir(&key, predicates) && (!result.contains(app_name_dir)) {
             result.push(app_name_dir.clone());
         }
     }
